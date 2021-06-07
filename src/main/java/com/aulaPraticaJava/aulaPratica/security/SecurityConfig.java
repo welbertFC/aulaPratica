@@ -1,8 +1,11 @@
 package com.aulaPraticaJava.aulaPratica.security;
 
+
 import com.aulaPraticaJava.aulaPratica.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
@@ -13,56 +16,55 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private Environment environment;
+
     private final UserService usuarioService;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
-
 
     public SecurityConfig(UserService usuarioService, JwtAuthenticationEntryPoint authenticationEntryPoint) {
         this.usuarioService = usuarioService;
         this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.headers().frameOptions().disable();
 
-        http.cors()
-                .and()
-                .csrf()
-                .disable()
-                .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPoint)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+    public static final String[] PUBLIC_MATCHERS = {"/h2-console/**"};
+
+    public static final String[] PUBLIC_MATCHERS_GET = {"/game/**"};
+
+    public static final String[] PUBLIC_MATCHERS_POST = {"/cliente/**", "/auth/**"};
+
+
+    @Override
+    protected void configure(HttpSecurity httpSecurity) throws Exception {
+
+        if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
+            httpSecurity.headers().frameOptions().disable();
+        }
+
+        httpSecurity.cors().and().csrf().disable();
+        httpSecurity
                 .authorizeRequests()
-                .antMatchers(
-                        "/csrf",
-                        "/favicon.ico",
-                        "/**/*.png",
-                        "/**/*.gif",
-                        "/**/*.svg",
-                        "/**/*.jpg",
-                        "/**/*.html",
-                        "/**/*.css",
-                        "/**/*.js")
+                .antMatchers(PUBLIC_MATCHERS)
                 .permitAll()
-                .antMatchers(HttpMethod.POST,"/auth/**")
+                .antMatchers(HttpMethod.GET, PUBLIC_MATCHERS_GET)
                 .permitAll()
-                .antMatchers(HttpMethod.GET,"/rest/**")
+                .antMatchers(HttpMethod.POST, PUBLIC_MATCHERS_POST)
                 .permitAll()
                 .anyRequest()
                 .authenticated();
-
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
 

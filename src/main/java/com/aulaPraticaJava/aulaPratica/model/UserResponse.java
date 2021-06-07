@@ -1,11 +1,13 @@
 package com.aulaPraticaJava.aulaPratica.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
+@Data
 public class UserResponse implements UserDetails {
 
     private Integer id;

@@ -2,6 +2,7 @@ package com.aulaPraticaJava.aulaPratica.controller;
 
 import com.aulaPraticaJava.aulaPratica.model.JwtResponse;
 import com.aulaPraticaJava.aulaPratica.model.LoginRequest;
+import com.aulaPraticaJava.aulaPratica.model.NewClienteResponse;
 import com.aulaPraticaJava.aulaPratica.service.AutenticacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +21,8 @@ public class AutenticacaoController {
     private AutenticacaoService service;
 
     @PostMapping
-    public ResponseEntity<JwtResponse> autenticaUsuario(@Valid @RequestBody LoginRequest loginRequest){
-        String token = service.autenticaUsuario(loginRequest);
-        return ResponseEntity.ok(new JwtResponse(token));
+    public ResponseEntity<NewClienteResponse> autenticaUsuario(@Valid @RequestBody LoginRequest loginRequest){
+        var token = service.autenticaUsuario(loginRequest);
+        return ResponseEntity.ok(token);
     }
 }
